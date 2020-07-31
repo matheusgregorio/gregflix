@@ -8,37 +8,42 @@ function CadastroCategoria() {
   const valoresIniciais = {
     nome: '',
     descricao: '',
-    cor: '#000',
+    cor: '',
   };
-  const [categorias, setCategoria] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [values, setValues] = useState(valoresIniciais);
 
-  function setValue(chave, valor) { // chave pode ser nome, descrição, etc
+  function setValue(chave, valor) {
+    // chave: nome, descricao, bla, bli
     setValues({
       ...values,
-      [chave]: valor,
+      [chave]: valor, // nome: 'valor'
     });
   }
 
   function handleChange(infosDoEvento) {
-    // CapturaMudanca
-    const { value } = infosDoEvento.target;
     setValue(
       infosDoEvento.target.getAttribute('name'),
-      value,
+      infosDoEvento.target.value,
     );
   }
 
+  // ============
+
   useEffect(() => {
-    const URL_TOP = 'http://localhost:8080/categorias';
-    fetch(URL_TOP)
-      .then(async (respostaDoServidor) => {
-        const resposta = await respostaDoServidor.json();
-        setCategoria([
-          ...resposta,
-        ]);
-      });
-  });
+    if (window.location.href.includes('localhost')) {
+      const URL = 'http://localhost:8080/categorias';
+      fetch(URL)
+        .then(async (respostaDoServer) => {
+          if (respostaDoServer.ok) {
+            const resposta = await respostaDoServer.json();
+            setCategorias(resposta);
+            return;
+          }
+          throw new Error('Não foi possível pegar os dados');
+        });
+    }
+  }, []);
 
   return (
     <PageDefault>
@@ -49,7 +54,8 @@ function CadastroCategoria() {
 
       <form onSubmit={function handleSubmit(infosDoEvento) {
         infosDoEvento.preventDefault();
-        setCategoria([
+
+        setCategorias([
           ...categorias,
           values,
         ]);
@@ -67,41 +73,56 @@ function CadastroCategoria() {
         />
 
         <FormField
-          label="Descrição"
-          type="textarea"
-          value={values.descricao}
+          label="Descrição:"
+          type="????"
           name="descricao"
+          value={values.descricao}
           onChange={handleChange}
         />
+        {/* <div>
+          <label>
+            Descrição:
+            <textarea
+              type="text"
+              value={values.descricao}
+              name="descricao"
+              onChange={handleChange}
+            />
+          </label>
+        </div> */}
 
         <FormField
           label="Cor"
           type="color"
-          value={values.cor}
           name="cor"
+          value={values.cor}
           onChange={handleChange}
         />
+        {/* <div>
+          <label>
+            Cor:
+            <input
+              type="color"
+              value={values.cor}
+              name="cor"
+              onChange={handleChange}
+            />
+          </label>
+        </div> */}
 
-        <Button>
+        <Button type="submit">
           Cadastrar
         </Button>
       </form>
 
-      {categorias.length === 0 && (
-        <div>
-          Loading...
-        </div>
-      )}
-
       <ul>
         {categorias.map((categoria) => (
-          <li key={`${categoria.nome}`}>
-            {categoria.nome}
+          <li key={`${categoria.id}`}>
+            {categoria.titulo}
           </li>
         ))}
       </ul>
 
-      <br />
       <Link to="/">
         Ir para home
       </Link>
